@@ -1,218 +1,122 @@
-```html
 <!DOCTYPE html>
 <html lang="sv">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>EVIL AI</title>
+<title>Snake Game</title>
 
 <style>
-
-body{
-  background:black;
-  color:#00ff66;
-  font-family:Arial;
-  margin:0;
-  padding:20px;
+body {
+  margin: 0;
+  background: black;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  color: white;
+  font-family: Arial;
 }
 
-h1{
-  color:red;
-  text-shadow:0 0 10px red;
+canvas {
+  background: #111;
+  border: 2px solid #00ff66;
 }
-
-#status{
-  margin-bottom:10px;
-}
-
-#chat{
-  height:400px;
-  overflow-y:auto;
-  border:1px solid #00ff66;
-  padding:10px;
-  margin-bottom:10px;
-}
-
-.user{
-  color:#00ff66;
-}
-
-.ai{
-  color:red;
-}
-
-input{
-  width:75%;
-  padding:12px;
-  background:black;
-  color:#00ff66;
-  border:1px solid #00ff66;
-}
-
-button{
-  padding:12px;
-  background:#00ff66;
-  border:none;
-  cursor:pointer;
-  font-weight:bold;
-}
-
-button:disabled{
-  opacity:0.5;
-  cursor:not-allowed;
-}
-
 </style>
 </head>
 
 <body>
 
-<h1>EVIL AI</h1>
+<canvas id="game" width="400" height="400"></canvas>
 
-<div id="status">Laddar AI...</div>
+<script>
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
 
-<div id="chat"></div>
+const box = 20;
 
-<input id="input" placeholder="Skriv något..." />
-<button id="sendBtn">SKICKA</button>
+let snake = [];
+snake[0] = { x: 9 * box, y: 9 * box };
 
-<script type="module">
+let direction = "RIGHT";
 
-import { CreateMLCEngine }
-from "https://esm.run/@mlc-ai/web-llm";
+let food = {
+  x: Math.floor(Math.random() * 20) * box,
+  y: Math.floor(Math.random() * 20) * box
+};
 
-const status = document.getElementById("status");
-const chat = document.getElementById("chat");
-const input = document.getElementById("input");
-const sendBtn = document.getElementById("sendBtn");
+let score = 0;
 
-let engine;
+document.addEventListener("keydown", updateDirection);
 
-async function startAI(){
-
-  try{
-
-    engine = await CreateMLCEngine(
-      "TinyLlama-1.1B-Chat-v1.0-q4f16_1-MLC"
-    );
-
-    status.innerText = "EVIL AI är online.";
-
-    sendBtn.disabled = false;
-
-  }catch(err){
-
-    console.error(err);
-
-    status.innerText =
-      "Kunde inte starta AI.";
-
-  }
-
+function updateDirection(event) {
+  if (event.key === "ArrowLeft" && direction !== "RIGHT") direction = "LEFT";
+  if (event.key === "ArrowUp" && direction !== "DOWN") direction = "UP";
+  if (event.key === "ArrowRight" && direction !== "LEFT") direction = "RIGHT";
+  if (event.key === "ArrowDown" && direction !== "UP") direction = "DOWN";
 }
 
-sendBtn.disabled = true;
+function drawGame() {
 
-startAI();
+  ctx.fillStyle = "#111";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-function addMessage(text, className){
-
-  const div = document.createElement("div");
-
-  div.className = className;
-
-  div.innerHTML = text;
-
-  chat.appendChild(div);
-
-  chat.scrollTop = chat.scrollHeight;
-
-}
-
-async function sendMessage(){
-
-  const text = input.value.trim();
-
-  if(!text) return;
-
-  addMessage(
-    `<p><b>Du:</b> ${text}</p>`,
-    "user"
-  );
-
-  input.value = "";
-
-  const thinking = document.createElement("div");
-
-  thinking.className = "ai";
-
-  thinking.innerHTML =
-    "<p><b>EVIL AI:</b> Tänker...</p>";
-
-  chat.appendChild(thinking);
-
-  chat.scrollTop = chat.scrollHeight;
-
-  try{
-
-    const response =
-      await engine.chat.completions.create({
-
-      messages:[
-
-        {
-          role:"system",
-          content:`
-Du är en evil AI.
-Du är creepy, kall och mystisk.
-Du svarar kort.
-`
-        },
-
-        {
-          role:"user",
-          content:text
-        }
-
-      ],
-
-      max_tokens:40,
-      temperature:1
-
-    });
-
-    const aiText =
-      response.choices[0].message.content;
-
-    thinking.innerHTML =
-      `<p><b>EVIL AI:</b> ${aiText}</p>`;
-
-  }catch(err){
-
-    console.error(err);
-
-    thinking.innerHTML =
-      "<p><b>EVIL AI:</b> ERROR...</p>";
-
+  for (let i = 0; i < snake.length; i++) {
+    ctx.fillStyle = i === 0 ? "#00ff66" : "white";
+    ctx.fillRect(snake[i].x, snake[i].y, box, box);
   }
 
-}
+  ctx.fillStyle = "red";
+  ctx.fillRect(food.x, food.y, box, box);
 
-sendBtn.onclick = sendMessage;
+  let snakeX = snake[0].x;
+  let snakeY = snake[0].y;
 
-input.addEventListener("keydown", (e)=>{
+  if (direction === "LEFT") snakeX -= box;
+  if (direction === "RIGHT") snakeX += box;
+  if (direction === "UP") snakeY -= box;
+  if (direction === "DOWN") snakeY += box;
 
-  if(e.key === "Enter"){
-
-    sendMessage();
-
+  if (snakeX === food.x && snakeY === food.y) {
+    score++;
+    food = {
+      x: Math.floor(Math.random() * 20) * box,
+      y: Math.floor(Math.random() * 20) * box
+    };
+  } else {
+    snake.pop();
   }
 
-});
+  let newHead = {
+    x: snakeX,
+    y: snakeY
+  };
 
+  // game over
+  if (
+    snakeX < 0 ||
+    snakeY < 0 ||
+    snakeX >= 400 ||
+    snakeY >= 400 ||
+    collision(newHead, snake)
+  ) {
+    clearInterval(game);
+    alert("Game Over! Score: " + score);
+  }
+
+  snake.unshift(newHead);
+}
+
+function collision(head, array) {
+  for (let i = 0; i < array.length; i++) {
+    if (head.x === array[i].x && head.y === array[i].y) {
+      return true;
+    }
+  }
+  return false;
+}
+
+let game = setInterval(drawGame, 100);
 </script>
 
 </body>
 </html>
-```
