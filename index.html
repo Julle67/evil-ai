@@ -1,50 +1,25 @@
-<!DOCTYPE html>
-<html lang="sv">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Snake Game</title>
-
-<style>
-body {
-  margin: 0;
-  background: black;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-  color: white;
-  font-family: Arial;
-}
-
-canvas {
-  background: #111;
-  border: 2px solid #00ff66;
-}
-</style>
-</head>
-
-<body>
-
-<canvas id="game" width="400" height="400"></canvas>
-
 <script>
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
 
 const box = 20;
+let game;
 
-let snake = [];
-snake[0] = { x: 9 * box, y: 9 * box };
+let snake, direction, food, score;
 
-let direction = "RIGHT";
+function initGame() {
+  snake = [{ x: 9 * box, y: 9 * box }];
+  direction = "RIGHT";
+  score = 0;
 
-let food = {
-  x: Math.floor(Math.random() * 20) * box,
-  y: Math.floor(Math.random() * 20) * box
-};
+  food = {
+    x: Math.floor(Math.random() * 20) * box,
+    y: Math.floor(Math.random() * 20) * box
+  };
 
-let score = 0;
+  if (game) clearInterval(game);
+  game = setInterval(drawGame, 100);
+}
 
 document.addEventListener("keydown", updateDirection);
 
@@ -58,7 +33,7 @@ function updateDirection(event) {
 function drawGame() {
 
   ctx.fillStyle = "#111";
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.fillRect(0, 0, 400, 400);
 
   for (let i = 0; i < snake.length; i++) {
     ctx.fillStyle = i === 0 ? "#00ff66" : "white";
@@ -78,20 +53,18 @@ function drawGame() {
 
   if (snakeX === food.x && snakeY === food.y) {
     score++;
+
     food = {
       x: Math.floor(Math.random() * 20) * box,
       y: Math.floor(Math.random() * 20) * box
     };
+
   } else {
     snake.pop();
   }
 
-  let newHead = {
-    x: snakeX,
-    y: snakeY
-  };
+  let newHead = { x: snakeX, y: snakeY };
 
-  // game over
   if (
     snakeX < 0 ||
     snakeY < 0 ||
@@ -99,8 +72,9 @@ function drawGame() {
     snakeY >= 400 ||
     collision(newHead, snake)
   ) {
-    clearInterval(game);
     alert("Game Over! Score: " + score);
+    initGame(); // 🔥 RESTARTAR SPELET
+    return;
   }
 
   snake.unshift(newHead);
@@ -115,8 +89,5 @@ function collision(head, array) {
   return false;
 }
 
-let game = setInterval(drawGame, 100);
+initGame(); // startar spelet första gången
 </script>
-
-</body>
-</html>
