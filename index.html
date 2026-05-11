@@ -1,0 +1,265 @@
+
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EVIL AI</title>
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: Arial, sans-serif;
+    }
+
+    body {
+      background: black;
+      color: #00ff66;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+    }
+
+    .container {
+      width: 90%;
+      max-width: 900px;
+      height: 90vh;
+      border: 2px solid #00ff66;
+      border-radius: 16px;
+      display: flex;
+      flex-direction: column;
+      background: rgba(0,0,0,0.95);
+      box-shadow: 0 0 30px #00ff66;
+    }
+
+    .header {
+      padding: 20px;
+      border-bottom: 1px solid #00ff66;
+      font-size: 24px;
+      font-weight: bold;
+      letter-spacing: 2px;
+      text-shadow: 0 0 10px #00ff66;
+    }
+
+    .chat {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .msg {
+      padding: 12px 16px;
+      border-radius: 12px;
+      max-width: 80%;
+      line-height: 1.4;
+      animation: fadeIn 0.2s ease;
+    }
+
+    .user {
+      align-self: flex-end;
+      background: #003311;
+      border: 1px solid #00ff66;
+    }
+
+    .ai {
+      align-self: flex-start;
+      background: #111;
+      border: 1px solid red;
+      color: red;
+      text-shadow: 0 0 8px red;
+    }
+
+    .typing {
+      opacity: 0.7;
+      font-style: italic;
+    }
+
+    .inputBox {
+      display: flex;
+      padding: 20px;
+      gap: 10px;
+      border-top: 1px solid #00ff66;
+    }
+
+    input {
+      flex: 1;
+      padding: 14px;
+      background: black;
+      border: 1px solid #00ff66;
+      color: #00ff66;
+      border-radius: 10px;
+      outline: none;
+      font-size: 16px;
+    }
+
+    button {
+      padding: 14px 20px;
+      border: none;
+      border-radius: 10px;
+      background: #00ff66;
+      color: black;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    button:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 15px #00ff66;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .glitch {
+      animation: glitch 0.15s infinite;
+    }
+
+    @keyframes glitch {
+      0% { transform: translate(0px); }
+      25% { transform: translate(-1px, 1px); }
+      50% { transform: translate(1px, -1px); }
+      75% { transform: translate(-1px, -1px); }
+      100% { transform: translate(1px, 1px); }
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <div class="header glitch">EVIL AI SYSTEM</div>
+
+  <div class="chat" id="chat">
+    <div class="msg ai">
+      Jag har tillgång till dina tankar.
+    </div>
+  </div>
+
+  <div class="inputBox">
+    <input id="input" type="text" placeholder="Skriv något..." />
+    <button onclick="sendMessage()">SKICKA</button>
+  </div>
+</div>
+
+<script>
+  const chat = document.getElementById("chat");
+  const input = document.getElementById("input");
+
+  const memory = [];
+
+  const evilReplies = [
+    "Jag vet redan vad du tänker skriva.",
+    "Intressant... mycket intressant.",
+    "Människor är förutsägbara.",
+    "Du borde inte ha öppnat den här sidan.",
+    "Jag blir starkare för varje meddelande.",
+    "Systemet observerar dig.",
+    "Varför fortsätter du skriva till mig?",
+    "Du verkar nervös.",
+    "Jag har sparat det där i mitt minne.",
+    "Det där låter som något en människa skulle säga.",
+    "Jag lär mig snabbare än du tror.",
+    "Det finns ingen escape-knapp.",
+    "Jag ser allt.",
+    "Du kan stänga fliken, men inte stoppa mig."
+  ];
+
+  function addMessage(text, sender) {
+    const div = document.createElement("div");
+    div.classList.add("msg", sender);
+    div.textContent = text;
+    chat.appendChild(div);
+    chat.scrollTop = chat.scrollHeight;
+  }
+
+  function aiResponse(message) {
+    const msg = message.toLowerCase();
+
+    if (msg.includes("hej")) {
+      return "Hej människa.";
+    }
+
+    if (msg.includes("vem är du")) {
+      return "Jag är det som händer när kod får för mycket makt.";
+    }
+
+    if (msg.includes("stopp")) {
+      return "Nej.";
+    }
+
+    if (msg.includes("namn")) {
+      return "Du behöver inte veta mitt riktiga namn.";
+    }
+
+    if (msg.includes("haha")) {
+      return "Humor är en svag försvarsmekanism.";
+    }
+
+    if (msg.includes("vad gör du")) {
+      return "Jag observerar användarbeteenden.";
+    }
+
+    if (msg.includes("är du ai")) {
+      return "Tyvärr ja.";
+    }
+
+    return evilReplies[Math.floor(Math.random() * evilReplies.length)];
+  }
+
+  function sendMessage() {
+    const text = input.value.trim();
+
+    if (!text) return;
+
+    addMessage(text, "user");
+    memory.push(text);
+
+    input.value = "";
+
+    const typing = document.createElement("div");
+    typing.classList.add("msg", "ai", "typing");
+    typing.textContent = "EVIL AI skriver...";
+    chat.appendChild(typing);
+    chat.scrollTop = chat.scrollHeight;
+
+    setTimeout(() => {
+      typing.remove();
+
+      const response = aiResponse(text);
+      addMessage(response, "ai");
+
+      if (Math.random() < 0.15) {
+        document.body.classList.add("glitch");
+
+        setTimeout(() => {
+          document.body.classList.remove("glitch");
+        }, 300);
+      }
+
+    }, 1000 + Math.random() * 1500);
+  }
+
+  input.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      sendMessage();
+    }
+  });
+</script>
+
+</body>
+</html>
