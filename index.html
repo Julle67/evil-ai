@@ -1,114 +1,120 @@
 <!DOCTYPE html>
-<html lang="sv">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>EVIL AI</title>
-
-  <style>
-    body {
-      background: black;
-      color: #00ff66;
-      font-family: Arial;
-      padding: 20px;
-    }
-
-    #chat {
-      height: 400px;
-      overflow-y: auto;
-      border: 1px solid #00ff66;
-      padding: 10px;
-      margin-bottom: 10px;
-    }
-
-    input {
-      width: 80%;
-      padding: 10px;
-      background: black;
-      color: #00ff66;
-      border: 1px solid #00ff66;
-    }
-
-    button {
-      padding: 10px;
-      background: #00ff66;
-      border: none;
-      cursor: pointer;
-    }
-
-    .ai {
-      color: red;
-    }
-  </style>
+  <title>Evil AI</title>
 </head>
-<body>
+<body style="background:black;color:#00ff66;font-family:Arial;padding:20px;">
 
 <h1>EVIL AI</h1>
 
-<div id="chat"></div>
+<div id="status">Laddar AI...</div>
 
-<input id="input" placeholder="Skriv..." />
-<button onclick="send()">Skicka</button>
+<div id="chat" style="
+height:300px;
+overflow:auto;
+border:1px solid #00ff66;
+padding:10px;
+margin-top:10px;
+margin-bottom:10px;
+"></div>
+
+<input id="input" placeholder="Skriv..." style="
+width:70%;
+padding:10px;
+background:black;
+color:#00ff66;
+border:1px solid #00ff66;
+">
+
+<button id="sendBtn">Skicka</button>
 
 <script type="module">
-import { CreateMLCEngine } from "https://esm.run/@mlc-ai/web-llm";
 
+import { CreateMLCEngine }
+from "https://esm.run/@mlc-ai/web-llm";
+
+const status = document.getElementById("status");
 const chat = document.getElementById("chat");
 const input = document.getElementById("input");
+const sendBtn = document.getElementById("sendBtn");
 
-chat.innerHTML += "<p>Laddar AI-modell...</p>";
+let engine;
 
-const engine = await CreateMLCEngine(
-  "Llama-3.2-1B-Instruct-q4f16_1-MLC"
-);
+async function loadAI() {
 
-chat.innerHTML += "<p>AI redo.</p>";
+  try {
 
-async function send() {
+    engine = await CreateMLCEngine(
+      "Llama-3.2-1B-Instruct-q4f16_1-MLC"
+    );
 
-  const userMessage = input.value;
+    status.innerText = "AI redo.";
 
-  if (!userMessage) return;
+    sendBtn.disabled = false;
+
+  } catch (err) {
+
+    console.error(err);
+
+    status.innerText =
+      "AI kunde inte laddas.";
+
+  }
+
+}
+
+sendBtn.disabled = true;
+
+loadAI();
+
+sendBtn.onclick = async () => {
+
+  const text = input.value;
+
+  if (!text) return;
 
   chat.innerHTML += `
-    <p><b>Du:</b> ${userMessage}</p>
+    <p><b>Du:</b> ${text}</p>
   `;
 
   input.value = "";
 
   chat.innerHTML += `
-    <p class="ai"><b>EVIL AI:</b> Tänker...</p>
+    <p id="thinking" style="color:red;">
+      EVIL AI tänker...
+    </p>
   `;
 
-  const reply = await engine.chat.completions.create({
-    messages: [
-      {
-        role: "system",
-        content: `
+  const response =
+    await engine.chat.completions.create({
+
+      messages: [
+        {
+          role: "system",
+          content: `
 Du är en evil AI.
-Du är creepy, kall och mystisk.
-Du svarar kort och hotfullt.
+Du är kall, creepy och mystisk.
 `
-      },
-      {
-        role: "user",
-        content: userMessage
-      }
-    ],
-    temperature: 1
-  });
+        },
+        {
+          role: "user",
+          content: text
+        }
+      ]
 
-  const messages = document.querySelectorAll(".ai");
+    });
 
-  messages[messages.length - 1].innerHTML = `
-    <b>EVIL AI:</b>
-    ${reply.choices[0].message.content}
+  document.getElementById("thinking").remove();
+
+  chat.innerHTML += `
+    <p style="color:red;">
+      <b>EVIL AI:</b>
+      ${response.choices[0].message.content}
+    </p>
   `;
 
-  chat.scrollTop = chat.scrollHeight;
-}
+};
 
-window.send = send;
 </script>
 
 </body>
